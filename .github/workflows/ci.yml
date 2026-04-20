@@ -31,7 +31,7 @@ jobs:
           sudo apt-get install -y python3-tk scrot python3-xlib
 
       - name: Sync dependencies
-        run: uv sync --all-groups
+        run: uv sync --all-groups --no-install-project
 
       - name: Ruff lint
         run: uv run ruff check .
