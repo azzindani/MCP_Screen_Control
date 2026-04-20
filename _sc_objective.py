@@ -1,6 +1,6 @@
 """objective.md protocol: read, write, validate, advance."""
+
 import re
-from pathlib import Path
 
 from _sc_helpers import OBJECTIVE_PATH, TMP_DIR
 from shared.file_utils import atomic_write
@@ -110,7 +110,7 @@ def advance_step() -> None:
 
 def set_status(status: str) -> None:
     """Set the Status field in objective.md."""
-    bak = snapshot(OBJECTIVE_PATH)
+    snapshot(OBJECTIVE_PATH)
     data = read_objective()
     data["status"] = status
     write_objective(data)
@@ -125,7 +125,7 @@ def set_last_action(description: str) -> None:
 
 def set_clarification(question: str) -> None:
     """Populate Clarification Needed and set Status = NEEDS_CLARIFICATION."""
-    bak = snapshot(OBJECTIVE_PATH)
+    snapshot(OBJECTIVE_PATH)
     data = read_objective()
     data["clarification"] = question
     data["status"] = "NEEDS_CLARIFICATION"
@@ -135,6 +135,7 @@ def set_clarification(question: str) -> None:
 # ---------------------------------------------------------------------------
 # Internal parser
 # ---------------------------------------------------------------------------
+
 
 def _parse(text: str) -> dict:
     sections = {

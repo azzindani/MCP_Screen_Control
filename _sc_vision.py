@@ -1,12 +1,13 @@
 """LM Studio VLM calls for coordinate extraction and verification."""
+
 import json
 
 import httpx
 
+from _sc_capture import preprocess_crop
 from _sc_helpers import CONFIDENCE_THRESHOLD, LMSTUDIO_BASE_URL, SCREEN_CURRENT
-from _sc_capture import preprocess_crop, preprocess_image
 from _sc_objective import set_clarification
-from shared.platform_utils import get_max_image_width, get_max_retries, get_max_tokens
+from shared.platform_utils import get_max_tokens
 
 
 def find_element(
@@ -30,7 +31,9 @@ def find_element(
     # Retry with each quadrant crop at higher effective resolution
     for quadrant in range(4):
         crop_b64 = preprocess_crop(SCREEN_CURRENT, quadrant)
-        retry = _call_locate(instruction, crop_b64, screen_w // 2, screen_h // 2, objective, current_step)
+        retry = _call_locate(
+            instruction, crop_b64, screen_w // 2, screen_h // 2, objective, current_step
+        )
         if retry.get("confidence", 0.0) >= CONFIDENCE_THRESHOLD:
             # Map quadrant-local coords back to screen coords
             x_off = (quadrant % 2) * (screen_w // 2)
@@ -72,9 +75,7 @@ def verify_element(instruction: str, image_b64: str, objective: str, current_ste
 
 def decompose_prompt(user_prompt: str) -> dict:
     """Text-only LM Studio call: decompose prompt → structured objective dict."""
-    schema = (
-        '{"objective": str, "steps": ["step1", ...], "platform": str}'
-    )
+    schema = '{"objective": str, "steps": ["step1", ...], "platform": str}'
     prompt = (
         f"Decompose the following user instruction into an ordered list of atomic UI steps.\n"
         f"Instruction: {user_prompt}\n"
@@ -112,6 +113,7 @@ def decompose_prompt(user_prompt: str) -> dict:
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
 
 def _call_locate(
     instruction: str,
@@ -151,7 +153,10 @@ def _llm_call(image_b64: str, prompt: str, max_tokens: int) -> str:
             {
                 "role": "user",
                 "content": [
-                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{image_b64}"}},
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:image/png;base64,{image_b64}"},
+                    },  # noqa: E501
                     {"type": "text", "text": prompt},
                 ],
             }

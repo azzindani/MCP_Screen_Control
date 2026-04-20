@@ -1,4 +1,5 @@
 """Post-action verification loop."""
+
 from _sc_capture import capture_screen, preprocess_image
 from _sc_objective import advance_step, read_objective, set_status
 from _sc_vision import verify_element

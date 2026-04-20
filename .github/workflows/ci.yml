@@ -28,7 +28,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y python3-tk scrot xvfb
+          sudo apt-get install -y python3-tk scrot python3-xlib
 
       - name: Sync dependencies
         run: uv sync --all-groups
@@ -39,10 +39,5 @@ jobs:
       - name: Ruff format check
         run: uv run ruff format --check .
 
-      - name: Run tests (Linux with virtual display)
-        if: runner.os == 'Linux'
-        run: xvfb-run -a uv run pytest -v
-
-      - name: Run tests (non-Linux)
-        if: runner.os != 'Linux'
+      - name: Run tests
         run: uv run pytest -v

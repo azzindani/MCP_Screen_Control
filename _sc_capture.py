@@ -1,4 +1,5 @@
 """Screenshot capture and image preprocessing."""
+
 import base64
 import shutil
 from pathlib import Path
@@ -7,7 +8,7 @@ import mss
 import mss.tools
 from PIL import Image
 
-from _sc_helpers import MAX_IMAGE_WIDTH, SCREEN_CURRENT, SCREEN_PREV, TMP_DIR
+from _sc_helpers import SCREEN_CURRENT, SCREEN_PREV, TMP_DIR
 from shared.platform_utils import get_max_image_width
 
 
@@ -67,10 +68,9 @@ def preprocess_crop(path: str | Path, quadrant: int, max_width: int | None = Non
     import io
 
     buf = io.BytesIO()
-    cropped.resize(
-        (min(max_width, cropped.width), int(cropped.height * min(max_width, cropped.width) / cropped.width)),
-        Image.LANCZOS,
-    ).save(buf, format="PNG")
+    new_w = min(max_width, cropped.width)
+    new_h = int(cropped.height * new_w / cropped.width)
+    cropped.resize((new_w, new_h), Image.LANCZOS).save(buf, format="PNG")
     return base64.b64encode(buf.getvalue()).decode("utf-8")
 
 

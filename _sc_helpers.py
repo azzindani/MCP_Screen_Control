@@ -1,4 +1,5 @@
 """Shared constants and imports for all _sc_* modules."""
+
 from pathlib import Path
 
 LMSTUDIO_BASE_URL = "http://localhost:1234/v1"

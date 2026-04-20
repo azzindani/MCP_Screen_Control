@@ -1,17 +1,22 @@
 """Thin router — imports from _sc_* sub-modules. Zero MCP imports."""
+
+from _sc_actions import click, double_click, press_key, right_click, scroll, type_text
 from _sc_capture import capture_screen as _capture_screen
+from _sc_capture import preprocess_image
+from _sc_helpers import OBJECTIVE_PATH
 from _sc_objective import (
     create_workspace,
-    read_objective as _read_objective,
     set_last_action,
     validate_workspace,
     write_objective,
 )
-from _sc_actions import click, double_click, press_key, right_click, scroll, type_text
+from _sc_objective import (
+    read_objective as _read_objective,
+)
 from _sc_verify import verify_step as _verify_step
-from _sc_vision import decompose_prompt, find_element as _find_element
+from _sc_vision import decompose_prompt
+from _sc_vision import find_element as _find_element
 from shared.version_control import snapshot
-from _sc_helpers import OBJECTIVE_PATH
 
 
 def start_task(prompt: str) -> dict:
@@ -77,9 +82,6 @@ def find_element_tool(instruction: str) -> dict:
     if not validate_workspace():
         create_workspace()
 
-    from _sc_capture import preprocess_image
-    import _sc_helpers as h
-
     cap = _capture_screen()
     if not cap.get("success"):
         return {"success": False, "error": "Screen capture failed.", "token_estimate": 10}
@@ -97,7 +99,9 @@ def find_element_tool(instruction: str) -> dict:
     return result
 
 
-def execute_action(action: str, x: int = 0, y: int = 0, text: str = "", key: str = "", clicks: int = 3) -> dict:
+def execute_action(
+    action: str, x: int = 0, y: int = 0, text: str = "", key: str = "", clicks: int = 3
+) -> dict:
     """Execute click/double_click/right_click/type/key/scroll action."""
     if not validate_workspace():
         create_workspace()

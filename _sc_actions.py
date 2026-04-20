@@ -1,4 +1,5 @@
 """pyautogui mouse/keyboard execution."""
+
 import pyautogui
 
 from _sc_helpers import OBJECTIVE_PATH

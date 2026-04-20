@@ -1,6 +1,8 @@
 """FastMCP server — thin wrappers only. All logic lives in engine.py."""
-import engine
+
 from fastmcp import FastMCP
+
+import engine
 
 mcp = FastMCP("screen-control")
 

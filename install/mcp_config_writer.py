@@ -1,4 +1,5 @@
 """Write mcp.json entry for this server into the user's MCP client config."""
+
 import json
 import os
 import subprocess
