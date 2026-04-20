@@ -142,6 +142,90 @@ class TestUpdateObjective:
 
 
 # ---------------------------------------------------------------------------
+# objective mutation — mid-task goal change
+# ---------------------------------------------------------------------------
+
+
+class TestObjectiveMutation:
+    def setup_method(self):
+        _reset_tmp()
+
+    def _make_data(self, prompt, steps=None):
+        steps_list = steps or [prompt]
+        steps_md = "\n".join(f"- [ ] {s}" for s in steps_list)
+        return {
+            "objective": prompt,
+            "steps": steps_md,
+            "current_step": steps_list[0],
+            "platform": "desktop",
+            "status": "RUNNING",
+            "last_action": "(none)",
+            "clarification": "",
+            "token_estimate": 30,
+        }
+
+    def test_mid_task_update_discards_partial_progress(self):
+        """update_objective while steps are in progress resets to step 1."""
+        from _sc_objective import advance_step, read_objective, write_objective
+
+        TMP.mkdir(parents=True, exist_ok=True)
+        write_objective(self._make_data("original goal", ["step one", "step two", "step three"]))
+        # Simulate completing first step
+        advance_step()
+        state = read_objective()
+        assert state["current_step"] == "step two"
+
+        # Now user changes goal mid-task
+        new_data = self._make_data("entirely new goal", ["new step A", "new step B"])
+        with patch("engine.decompose_prompt", return_value=new_data):
+            import engine
+
+            result = engine.update_objective("entirely new goal")
+
+        assert result["objective"] == "entirely new goal"
+        assert result["current_step"] == "new step A"
+
+        final = read_objective()
+        assert "step one" not in final["steps"]
+        assert "step two" not in final["steps"]
+        assert "new step A" in final["steps"]
+        assert final["status"] == "RUNNING"
+
+    def test_mid_task_update_creates_backup_of_old_objective(self):
+        """Backup of old objective.md is created before overwrite."""
+        from _sc_objective import advance_step, write_objective
+
+        TMP.mkdir(parents=True, exist_ok=True)
+        write_objective(self._make_data("original", ["step A", "step B"]))
+        advance_step()
+
+        new_data = self._make_data("replacement goal")
+        with patch("engine.decompose_prompt", return_value=new_data):
+            import engine
+
+            result = engine.update_objective("replacement goal")
+
+        assert "backup" in result
+
+    def test_status_running_after_mutation(self):
+        """Status is RUNNING (not COMPLETE/BLOCKED) after goal change."""
+        from _sc_objective import read_objective, set_status, write_objective
+
+        TMP.mkdir(parents=True, exist_ok=True)
+        write_objective(self._make_data("original"))
+        set_status("BLOCKED")
+
+        new_data = self._make_data("fresh goal")
+        with patch("engine.decompose_prompt", return_value=new_data):
+            import engine
+
+            engine.update_objective("fresh goal")
+
+        final = read_objective()
+        assert final["status"] == "RUNNING"
+
+
+# ---------------------------------------------------------------------------
 # find_element
 # ---------------------------------------------------------------------------
 
