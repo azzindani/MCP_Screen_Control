@@ -12,6 +12,9 @@ dependencies = [
     "psutil>=5.9",
 ]
 
+[project.scripts]
+screen-control = "server:main"
+
 [dependency-groups]
 dev = [
     "pytest>=9.0",
@@ -33,6 +36,9 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["shared", "_sc_helpers", "_sc_capture", "_sc_vision", "_sc_actions", "_sc_objective", "_sc_verify", "engine"]
 
 [tool.pyright]
 pythonVersion = "3.12"

@@ -1,3 +1,5 @@
+"""Path resolution and atomic file writes."""
+
 import os
 import tempfile
 from pathlib import Path
@@ -9,12 +11,11 @@ def resolve_path(path: str | Path, base: str | Path | None = None) -> Path:
     if p.is_absolute():
         return p
     root = Path(base) if base else Path.cwd()
-    resolved = (root / p).resolve()
-    return resolved
+    return (root / p).resolve()
 
 
-def atomic_write(path: str | Path, content: str) -> None:
-    """Write content atomically using a temp file + rename."""
+def atomic_write_text(path: str | Path, content: str) -> None:
+    """Write text content atomically using a temp file + rename."""
     dest = Path(path)
     dest.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp_path = tempfile.mkstemp(dir=dest.parent, prefix=".tmp_")
@@ -28,3 +29,7 @@ def atomic_write(path: str | Path, content: str) -> None:
         except OSError:
             pass
         raise
+
+
+# Backward-compatible alias
+atomic_write = atomic_write_text

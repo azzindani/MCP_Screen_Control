@@ -16,7 +16,10 @@ from _sc_objective import (
 from _sc_verify import verify_step as _verify_step
 from _sc_vision import decompose_prompt
 from _sc_vision import find_element as _find_element
+from shared.progress import info, ok
 from shared.version_control import snapshot
+
+_VALID_ACTIONS = frozenset({"click", "double_click", "right_click", "type", "key", "scroll"})
 
 
 def start_task(prompt: str) -> dict:
@@ -29,11 +32,12 @@ def start_task(prompt: str) -> dict:
     write_objective(data)
     return {
         "success": True,
+        "op": "start_task",
         "objective": data["objective"],
         "steps": data["steps"],
         "current_step": data["current_step"],
         "backup": bak,
-        "progress": ["Workspace ready", "Objective decomposed"],
+        "progress": [ok("Workspace ready"), ok("Objective decomposed")],
         "token_estimate": data.get("token_estimate", 50),
     }
 
@@ -48,10 +52,11 @@ def update_objective(new_prompt: str) -> dict:
     write_objective(data)
     return {
         "success": True,
+        "op": "update_objective",
         "objective": data["objective"],
         "current_step": data["current_step"],
         "backup": bak,
-        "progress": ["Objective updated", "Steps reset"],
+        "progress": [ok("Objective updated"), ok("Steps reset")],
         "token_estimate": data.get("token_estimate", 50),
     }
 
@@ -74,7 +79,7 @@ def capture_screen_tool() -> dict:
         create_workspace()
     result = _capture_screen()
     set_last_action("capture_screen")
-    return {**result, "progress": ["Screenshot captured"]}
+    return {**result, "progress": [ok("Screenshot captured", result.get("path", ""))]}
 
 
 def find_element_tool(instruction: str) -> dict:
@@ -88,7 +93,7 @@ def find_element_tool(instruction: str) -> dict:
 
     image_b64 = preprocess_image(cap["path"])
     data = _read_objective()
-    result = _find_element(
+    return _find_element(
         instruction,
         image_b64,
         cap["width"],
@@ -96,15 +101,40 @@ def find_element_tool(instruction: str) -> dict:
         data.get("objective", ""),
         data.get("current_step", ""),
     )
-    return result
 
 
 def execute_action(
-    action: str, x: int = 0, y: int = 0, text: str = "", key: str = "", clicks: int = 3
+    action: str,
+    x: int = 0,
+    y: int = 0,
+    text: str = "",
+    key: str = "",
+    clicks: int = 3,
+    dry_run: bool = False,
 ) -> dict:
     """Execute click/double_click/right_click/type/key/scroll action."""
     if not validate_workspace():
         create_workspace()
+
+    # Validate BEFORE snapshot (§13 — no orphaned backups on bad input)
+    if action not in _VALID_ACTIONS:
+        return {
+            "success": False,
+            "error": f"Unknown action: {action!r}.",
+            "hint": f"Use one of: {sorted(_VALID_ACTIONS)}",
+            "token_estimate": 20,
+        }
+
+    if dry_run:
+        return {
+            "success": True,
+            "op": "execute_action",
+            "dry_run": True,
+            "would_change": True,
+            "action": action,
+            "progress": [info(f"dry_run: would execute {action}", f"x={x} y={y}")],
+            "token_estimate": 20,
+        }
 
     actions = {
         "click": lambda: click(x, y),
@@ -114,16 +144,12 @@ def execute_action(
         "key": lambda: press_key(key),
         "scroll": lambda: scroll(x, y, clicks),
     }
-    fn = actions.get(action)
-    if fn is None:
-        return {
-            "success": False,
-            "error": f"Unknown action: {action!r}. Valid: {list(actions)}",
-            "hint": "Use one of: click, double_click, right_click, type, key, scroll",
-            "token_estimate": 20,
-        }
-    result = fn()
-    return {**result, "progress": [f"Action executed: {action}"]}
+    result = actions[action]()
+    return {
+        **result,
+        "op": "execute_action",
+        "progress": [ok(f"Action executed: {action}")],
+    }
 
 
 def verify_step_tool(instruction: str) -> dict:

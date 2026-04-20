@@ -4,25 +4,27 @@ on:
   push:
     branches: ["**"]
   pull_request:
+    branches: ["**"]
 
 jobs:
   test:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.12"]
+    name: Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-latest, windows-latest]
+
+    env:
+      MCP_CONSTRAINED_MODE: "1"
+      PYTHONPATH: "."
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v4
         with:
-          version: "latest"
-
-      - name: Set up Python
-        run: uv python install ${{ matrix.python-version }}
+          python-version: "3.12"
 
       - name: Install Linux system deps
         if: runner.os == 'Linux'
@@ -38,6 +40,12 @@ jobs:
 
       - name: Ruff format check
         run: uv run ruff format --check .
+
+      - name: Verify tool docstrings
+        run: uv run python verify_tool_docstrings.py
+
+      - name: Pyright type check
+        run: uv run pyright engine.py server.py shared/
 
       - name: Run tests
         run: uv run pytest -v

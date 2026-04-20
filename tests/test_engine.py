@@ -445,3 +445,64 @@ class TestExecuteAction:
 
             result = engine.execute_action("click", x=10, y=10)
         assert "token_estimate" in result
+
+    def test_dry_run_returns_would_change_without_pyautogui(self):
+        import engine
+
+        with patch("pyautogui.click") as mock_click:
+            result = engine.execute_action("click", x=100, y=50, dry_run=True)
+            mock_click.assert_not_called()
+        assert result["success"] is True
+        assert result.get("dry_run") is True
+        assert result.get("would_change") is True
+
+
+# ---------------------------------------------------------------------------
+# constrained mode
+# ---------------------------------------------------------------------------
+
+
+class TestConstrainedMode:
+    def test_constrained_mode_returns_smaller_image_width(self):
+        import os
+
+        old = os.environ.get("MCP_CONSTRAINED_MODE")
+        try:
+            os.environ["MCP_CONSTRAINED_MODE"] = "1"
+            from shared.platform_utils import get_max_image_width
+
+            assert get_max_image_width() == 600
+        finally:
+            if old is None:
+                os.environ.pop("MCP_CONSTRAINED_MODE", None)
+            else:
+                os.environ["MCP_CONSTRAINED_MODE"] = old
+
+    def test_unconstrained_mode_returns_larger_image_width(self):
+        import os
+
+        old = os.environ.get("MCP_CONSTRAINED_MODE")
+        try:
+            os.environ.pop("MCP_CONSTRAINED_MODE", None)
+            with patch("shared.platform_utils.is_constrained_mode", return_value=False):
+                from shared.platform_utils import get_max_image_width
+
+                assert get_max_image_width() == 800
+        finally:
+            if old is not None:
+                os.environ["MCP_CONSTRAINED_MODE"] = old
+
+    def test_constrained_mode_returns_smaller_token_budget(self):
+        import os
+
+        old = os.environ.get("MCP_CONSTRAINED_MODE")
+        try:
+            os.environ["MCP_CONSTRAINED_MODE"] = "1"
+            from shared.platform_utils import get_max_tokens
+
+            assert get_max_tokens() == 100
+        finally:
+            if old is None:
+                os.environ.pop("MCP_CONSTRAINED_MODE", None)
+            else:
+                os.environ["MCP_CONSTRAINED_MODE"] = old
