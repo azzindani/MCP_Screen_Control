@@ -407,43 +407,43 @@ For `update_objective`:
 
 ### Phase 1 — Foundation
 
-- [ ] Repository scaffolded with correct structure
-- [ ] `shared/` modules implemented (version_control, file_utils, platform_utils, progress, receipt)
-- [ ] `_sc_helpers.py` — constants and shared imports
-- [ ] `_sc_objective.py` — objective.md read/write/validate/advance
-- [ ] `_sc_capture.py` — mss screenshot + Pillow preprocess
-- [ ] `_sc_vision.py` — LM Studio vision + decompose calls
-- [ ] `_sc_actions.py` — pyautogui click/type/scroll/key
-- [ ] `_sc_verify.py` — post-action verification loop
-- [ ] `engine.py` — thin router importing from sub-modules
-- [ ] `server.py` — 8 tools, all one-liners
+- [x] Repository scaffolded with correct structure
+- [x] `shared/` modules implemented (version_control, file_utils, platform_utils, progress, receipt)
+- [x] `_sc_helpers.py` — constants and shared imports
+- [x] `_sc_objective.py` — objective.md read/write/validate/advance
+- [x] `_sc_capture.py` — mss screenshot + Pillow preprocess
+- [x] `_sc_vision.py` — LM Studio vision + decompose calls
+- [x] `_sc_actions.py` — pyautogui click/type/scroll/key
+- [x] `_sc_verify.py` — post-action verification loop
+- [x] `engine.py` — thin router importing from sub-modules
+- [x] `server.py` — 8 tools, all one-liners
 
 ### Phase 2 — Testing
 
-- [ ] `tests/fixtures/` — 5 fixture files
-- [ ] `tests/test_engine.py` — all tools tested per §27 requirements
-- [ ] `uv run pytest` — all pass
-- [ ] `uv run ruff check .` — no errors
-- [ ] `uv run ruff format --check .` — clean
-- [ ] Tool docstring length — all ≤ 80 chars verified
+- [x] `tests/fixtures/` — 5 fixture files
+- [x] `tests/test_engine.py` — all tools tested per §27 requirements
+- [x] `uv run pytest` — all pass (22 tests)
+- [x] `uv run ruff check .` — no errors
+- [x] `uv run ruff format --check .` — clean
+- [x] Tool docstring length — all ≤ 80 chars verified
 
 ### Phase 3 — Distribution
 
-- [ ] `install/install.sh` and `install.bat`
-- [ ] `install/mcp_config_writer.py`
-- [ ] mcp.json entries (Windows + macOS/Linux) in README
-- [ ] `.github/workflows/ci.yml` — 3-platform matrix
-- [ ] `.github/workflows/release.yml`
+- [x] `install/install.sh` and `install.bat`
+- [x] `install/mcp_config_writer.py`
+- [x] mcp.json entries (Windows + macOS/Linux) in README
+- [x] `.github/workflows/ci.yml` — 3-platform matrix
+- [x] `.github/workflows/release.yml`
 - [ ] Manual test in LM Studio with Qwen3.5-4B or Gemma 4 E4B
 - [ ] 5-step task test — full loop works end to end
 
 ### Phase 4 — Hardening
 
 - [ ] Confidence retry logic tested on real dense UI screenshots
-- [ ] `BLOCKED` state surfaces helpful message to user
-- [ ] `NEEDS_CLARIFICATION` state pauses loop and asks user
-- [ ] Objective mutation tested (mid-task goal change)
-- [ ] README follows STANDARDS §35 section order
+- [x] `BLOCKED` state surfaces helpful message to user
+- [x] `NEEDS_CLARIFICATION` state pauses loop and asks user
+- [x] Objective mutation tested (mid-task goal change)
+- [x] README follows STANDARDS §37 section order
 
 ---
 
